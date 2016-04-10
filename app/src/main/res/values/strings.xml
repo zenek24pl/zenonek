@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">zenonek</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_game">GameActivity</string>
+    <string name="Play">btnPlay</string>
+    <string name="High_score">textHighScore</string>
+</resources>
