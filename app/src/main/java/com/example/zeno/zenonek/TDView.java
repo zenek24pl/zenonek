@@ -4,14 +4,20 @@
 package com.example.zeno.zenonek;
 
 import android.content.Context;
+import android.content.res.AssetFileDescriptor;
+import android.content.res.AssetManager;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.media.AudioManager;
+import android.media.SoundPool;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.jar.Attributes;
 
@@ -52,10 +58,39 @@ public class TDView extends SurfaceView implements Runnable {
     //zmienna odpowiedzialna za koniec gry
     private boolean gameEnded;
 
+    //muza
+    private SoundPool soundPool;
+    int start=-1;
+    int bump=-1;
+    int destroyed=-1;
+    int win=-1;
+
     public TDView(Context context,int x,int y) {
         super(context);
         this.context=context;
 
+        soundPool=new SoundPool(10, AudioManager.STREAM_MUSIC,0);
+        try{
+            AssetManager assetManager=context.getAssets();
+            AssetFileDescriptor descriptor;
+
+            //tworzenia
+            descriptor=assetManager.openFd("bump.wav");
+            bump=soundPool.load(descriptor,0);
+
+            descriptor=assetManager.openFd("bomb.mp3");
+            start=soundPool.load(descriptor,0);
+
+            descriptor=assetManager.openFd("destroyed.wav");
+            destroyed=soundPool.load(descriptor,0);
+
+            descriptor=assetManager.openFd("win.wav");
+            win=soundPool.load(descriptor,0);
+
+        }catch (IOException e){
+            //wyswietlanie bledu
+            Log.e("error", "failed to load sound ");
+        }
 
         screenX=x;
         screenY=y;
@@ -98,8 +133,10 @@ public class TDView extends SurfaceView implements Runnable {
 
         //redukcja shielda
         if(hitDetected){
+            soundPool.play(bump,1,1,0,0,1);
             player.reduceShieldStrength();
             if(player.getShieldStrength()<0){
+                soundPool.play(destroyed,1,1,0,0,1);
             //gra skonczona
             gameEnded=true;
         }}
@@ -122,6 +159,7 @@ public class TDView extends SurfaceView implements Runnable {
         if(!gameEnded){
             //zmniejszanie sie odleglosci
             distanceRemaining -=player.getSpeed();
+            soundPool.play(win,1,1,0,0,1);
 
             //czas gry/lotu
             timeTaken=System.currentTimeMillis()-timeStarted;
@@ -237,6 +275,8 @@ public class TDView extends SurfaceView implements Runnable {
 
         //pobranie czasu startowego
         timeStarted=System.currentTimeMillis();
+
+        soundPool.play(start,1,1,0,0,1);
 
 
     }
